@@ -19,7 +19,7 @@ class NewsViewModel: INewsViewModel {
     
     private var allItems: [News] = []
     private var currentPage: Int = 1
-    private var isLoading: Bool = true
+    private var isLoading: Bool = false
     private var hasMoreToLoad: Bool = true
     private var searchQuery: String = ""
     private var isFiltering: Bool { !searchQuery.isEmpty }

@@ -14,19 +14,11 @@
 			remoteGlobalIDString = 0A6BE8EA2DDCE39700449002;
 			remoteInfo = DemoNewsAutodoc;
 		};
-		0A6BE90C2DDCE39900449002 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0A6BE8E32DDCE39700449002 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0A6BE8EA2DDCE39700449002;
-			remoteInfo = DemoNewsAutodoc;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0A6BE8EB2DDCE39700449002 /* DemoNewsAutodoc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoNewsAutodoc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A6BE9012DDCE39900449002 /* DemoNewsAutodocTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DemoNewsAutodocTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0A6BE90B2DDCE39900449002 /* DemoNewsAutodocUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DemoNewsAutodocUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -53,11 +45,6 @@
 			path = DemoNewsAutodocTests;
 			sourceTree = "<group>";
 		};
-		0A6BE90E2DDCE39900449002 /* DemoNewsAutodocUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = DemoNewsAutodocUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,13 +62,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0A6BE9082DDCE39900449002 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -90,7 +70,6 @@
 			children = (
 				0A6BE8ED2DDCE39700449002 /* DemoNewsAutodoc */,
 				0A6BE9042DDCE39900449002 /* DemoNewsAutodocTests */,
-				0A6BE90E2DDCE39900449002 /* DemoNewsAutodocUITests */,
 				0A6BE8EC2DDCE39700449002 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -100,7 +79,6 @@
 			children = (
 				0A6BE8EB2DDCE39700449002 /* DemoNewsAutodoc.app */,
 				0A6BE9012DDCE39900449002 /* DemoNewsAutodocTests.xctest */,
-				0A6BE90B2DDCE39900449002 /* DemoNewsAutodocUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -153,29 +131,6 @@
 			productReference = 0A6BE9012DDCE39900449002 /* DemoNewsAutodocTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		0A6BE90A2DDCE39900449002 /* DemoNewsAutodocUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0A6BE91C2DDCE39900449002 /* Build configuration list for PBXNativeTarget "DemoNewsAutodocUITests" */;
-			buildPhases = (
-				0A6BE9072DDCE39900449002 /* Sources */,
-				0A6BE9082DDCE39900449002 /* Frameworks */,
-				0A6BE9092DDCE39900449002 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0A6BE90D2DDCE39900449002 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				0A6BE90E2DDCE39900449002 /* DemoNewsAutodocUITests */,
-			);
-			name = DemoNewsAutodocUITests;
-			packageProductDependencies = (
-			);
-			productName = DemoNewsAutodocUITests;
-			productReference = 0A6BE90B2DDCE39900449002 /* DemoNewsAutodocUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -190,10 +145,6 @@
 						CreatedOnToolsVersion = 16.0;
 					};
 					0A6BE9002DDCE39900449002 = {
-						CreatedOnToolsVersion = 16.0;
-						TestTargetID = 0A6BE8EA2DDCE39700449002;
-					};
-					0A6BE90A2DDCE39900449002 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 0A6BE8EA2DDCE39700449002;
 					};
@@ -215,7 +166,6 @@
 			targets = (
 				0A6BE8EA2DDCE39700449002 /* DemoNewsAutodoc */,
 				0A6BE9002DDCE39900449002 /* DemoNewsAutodocTests */,
-				0A6BE90A2DDCE39900449002 /* DemoNewsAutodocUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -229,13 +179,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0A6BE8FF2DDCE39900449002 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0A6BE9092DDCE39900449002 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -259,13 +202,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0A6BE9072DDCE39900449002 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -273,11 +209,6 @@
 			isa = PBXTargetDependency;
 			target = 0A6BE8EA2DDCE39700449002 /* DemoNewsAutodoc */;
 			targetProxy = 0A6BE9022DDCE39900449002 /* PBXContainerItemProxy */;
-		};
-		0A6BE90D2DDCE39900449002 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0A6BE8EA2DDCE39700449002 /* DemoNewsAutodoc */;
-			targetProxy = 0A6BE90C2DDCE39900449002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -493,40 +424,6 @@
 			};
 			name = Release;
 		};
-		0A6BE91D2DDCE39900449002 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6W2JFXY7G2;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hm.DemoNewsAutodocUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = DemoNewsAutodoc;
-			};
-			name = Debug;
-		};
-		0A6BE91E2DDCE39900449002 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6W2JFXY7G2;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hm.DemoNewsAutodocUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = DemoNewsAutodoc;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -553,15 +450,6 @@
 			buildConfigurations = (
 				0A6BE91A2DDCE39900449002 /* Debug */,
 				0A6BE91B2DDCE39900449002 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0A6BE91C2DDCE39900449002 /* Build configuration list for PBXNativeTarget "DemoNewsAutodocUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0A6BE91D2DDCE39900449002 /* Debug */,
-				0A6BE91E2DDCE39900449002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

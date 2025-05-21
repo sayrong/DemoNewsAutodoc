@@ -27,6 +27,6 @@ final class NewsRepository: INewsRepository {
         let url = URL(string: "https://webapi.autodoc.ru/api/news/\(page)/\(pageSize)")!
         let (data, _) = try await network.data(from: url)
         let response = try JSONDecoder().decode(NewsResponse.self, from: data)
-        return response.news.compactMap { News(from: $0) }
+        return response.news.compactMap { News.convert(from: $0) }
     }
 }

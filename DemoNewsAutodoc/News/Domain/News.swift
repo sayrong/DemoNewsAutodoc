@@ -15,8 +15,8 @@ struct News {
     let titleImageUrl: URL
     let fullUrl: URL
     let categoryType: String
-    
-    init?(from dto: NewsDTO) {
+        
+    static func convert(from dto: NewsDTO) -> News? {
         guard let title = dto.title,
               let description = dto.description,
               let category = dto.categoryType,
@@ -26,14 +26,9 @@ struct News {
               let fullUrl = URL(string: fullUrlString) else {
             return nil
         }
-        
-        self.id = dto.id
-        self.title = title
-        self.description = description
-        self.categoryType = category
-        self.publishedDate = publishedDate
-        self.fullUrl = fullUrl
-        self.titleImageUrl = titleImageUrl
+        return .init(id: dto.id, title: title, description: description,
+                     publishedDate: publishedDate, titleImageUrl: titleImageUrl,
+                     fullUrl: fullUrl, categoryType: category)
     }
 
     static func stringToDate(_ string: String) -> Date? {
