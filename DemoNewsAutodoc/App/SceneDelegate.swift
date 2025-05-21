@@ -16,7 +16,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
         
-        let rootViewController = NewsViewController()
+        let newsRepository = NewsRepository()
+        let newsVM = NewsViewModel(repository: newsRepository)
+        let rootViewController = NewsViewController(viewModel: newsVM)
 
         window?.rootViewController = rootViewController
         window?.makeKeyAndVisible()

@@ -7,51 +7,71 @@
 
 import UIKit
 
+protocol INewsViewModel {
+    
+    typealias Snapshot = NSDiffableDataSourceSnapshot<NewsCollectionSection, NewsViewItem>
+    
+    var snapshotDidChange: ((Snapshot) -> ())? { get set }
+    func fetchNews()
+    func didScrollToEnd()
+}
+
+
 class NewsViewController: UIViewController {
     
-    enum Section: Hashable {
-        case main
-    }
+    private var viewModel: INewsViewModel
+    private var dataSource: UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>!
     
-    struct Item: Hashable {
-        let id = UUID()
-        let title: String
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
-    }
-    
-    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
-
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createCompositionalLayout())
-        //чтобы следовал за superview
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.register(NewsCollectionViewCell.self, forCellWithReuseIdentifier: NewsCollectionViewCell.reuseIdentifier)
         return collectionView
     }()
     
+    init(viewModel: INewsViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        addSubviews()
+        setupDataSource()
+        setupDelegate()
+        bindViewModel()
+        viewModel.fetchNews()
+    }
+    
+    private func addSubviews() {
         view.addSubview(collectionView)
- 
-        dataSource = UICollectionViewDiffableDataSource<Section, Item>(
+    }
+    
+    private func setupDelegate() {
+        collectionView.delegate = self
+    }
+    
+    private func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>(
             collectionView: collectionView
         ) { collectionView, indexPath, item in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NewsCollectionViewCell.reuseIdentifier, for: indexPath)
-            // Настройка ячейки
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NewsCollectionViewCell.reuseIdentifier, for: indexPath)
+                    as? NewsCollectionViewCell else {
+                return nil
+            }
+            cell.configure(with: item)
             return cell
         }
-        
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        snapshot.appendSections([.main])
-        snapshot.appendItems([
-            Item(title: "Item 1"),
-            Item(title: "Item 2"),
-            Item(title: "Item 3")
-        ])
-        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+    
+    private func bindViewModel() {
+        viewModel.snapshotDidChange = { [weak self] snapshot in
+            self?.dataSource.apply(snapshot, animatingDifferences: true)
+        }
     }
     
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
@@ -84,3 +104,18 @@ class NewsViewController: UIViewController {
     }
 }
 
+extension NewsViewController: UICollectionViewDelegate, UIScrollViewDelegate {
+    
+    // Пагинация
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let frameHeight = scrollView.bounds.height
+        
+        let distanceToBottom = contentHeight - offsetY - frameHeight
+        
+        if distanceToBottom > 0 && distanceToBottom < 200 {
+            viewModel.didScrollToEnd()
+        }
+    }
+}

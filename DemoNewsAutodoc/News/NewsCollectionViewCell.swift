@@ -13,8 +13,8 @@ class NewsCollectionViewCell: UICollectionViewCell {
     
     private var cornerRadius: CGFloat = 14.0
     
-    private let imageView: UIImageView = {
-        let imageView = UIImageView()
+    private let imageView: LazyImageView = {
+        let imageView = LazyImageView(frame: .zero)
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -34,7 +34,6 @@ class NewsCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(title)
         setupImageView()
         setupLabel()
-        
         configureLayout()
         configureShadow()
     }
@@ -43,10 +42,27 @@ class NewsCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func configure(with item: NewsViewItem) {
+        self.title.text = item.title
+        imageView.loadImage(from: item.imageUrl)
+    }
+    
+    // MARK: Lifecycle
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.cancelLoading()
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius).cgPath
+    }
+
+    
+    // MARK: Initial setup
+    
     private func setupImageView() {
-        imageView.image = UIImage(named: "gotta.JPG")!
-        
-   
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -56,8 +72,6 @@ class NewsCollectionViewCell: UICollectionViewCell {
     }
     
     private func setupLabel() {
-        title.text = randomLoremIpsum(length: Int.random(in: 1...100))
-        
         NSLayoutConstraint.activate([
             title.topAnchor.constraint(equalTo: imageView.bottomAnchor),
             title.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
@@ -73,28 +87,11 @@ class NewsCollectionViewCell: UICollectionViewCell {
     }
     
     private func configureShadow() {
-        // How blurred the shadow should be
         layer.shadowRadius = 2
-        // How far the shadow is offset from the cell's frame
         layer.shadowOffset = CGSize(width: 0, height: 2)
-        // The transparency of the shadow. Ranging from 0.0 (transparent) to 1.0 (opaque).
         layer.shadowOpacity = 0.25
-        // The default color is black
         layer.shadowColor = UIColor.black.cgColor
-        // To avoid the shadow to be clipped to the corner radius
         layer.cornerRadius = cornerRadius
         layer.masksToBounds = false
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius).cgPath
-    }
-    
-    private func randomLoremIpsum(length: Int) -> String {
-        let lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-        let words = lorem.split(separator: " ")
-        let selectedWords = (0..<length).map { _ in words.randomElement()! }
-        return selectedWords.joined(separator: " ")
     }
 }
