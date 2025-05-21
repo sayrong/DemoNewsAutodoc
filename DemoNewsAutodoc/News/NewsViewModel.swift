@@ -81,4 +81,11 @@ class NewsViewModel: INewsViewModel {
         }
         updateSnapshot(with: filtered)
     }
+    
+    func reloadData() {
+        currentPage = 1
+        allItems = []
+        hasMoreToLoad = true
+        fetchNews()
+    }
 }

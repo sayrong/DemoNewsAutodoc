@@ -16,6 +16,7 @@ protocol INewsViewModel {
     func didScrollToEnd()
     func didTapOnCell(with id: Int)
     func didSearchTextChanged(to query: String)
+    func reloadData()
 }
 
 
@@ -37,6 +38,8 @@ class NewsViewController: UIViewController {
         return searchController
     }()
     
+    private lazy var refreshControl = UIRefreshControl()
+    
     init(viewModel: INewsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -50,6 +53,7 @@ class NewsViewController: UIViewController {
         super.viewDidLoad()
         addSubviews()
         setupSearchController()
+        setupRefresh()
         setupDataSource()
         setupDelegate()
         bindViewModel()
@@ -66,6 +70,15 @@ class NewsViewController: UIViewController {
         navigationItem.searchController = searchController
         definesPresentationContext = true
         searchController.searchBar.delegate = self
+    }
+    
+    private func setupRefresh() {
+        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
+    }
+    
+    @objc private func refreshData() {
+        viewModel.reloadData()
     }
     
     private func setupDataSource() {
@@ -87,7 +100,11 @@ class NewsViewController: UIViewController {
     
     private func bindViewModel() {
         viewModel.snapshotDidChange = { [weak self] snapshot in
-            self?.dataSource.apply(snapshot, animatingDifferences: true)
+            guard let self = self else { return }
+            self.dataSource.apply(snapshot, animatingDifferences: true)
+            if self.refreshControl.isRefreshing {
+                self.refreshControl.endRefreshing()
+            }
         }
     }
     

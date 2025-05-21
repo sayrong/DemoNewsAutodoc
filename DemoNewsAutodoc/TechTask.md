@@ -49,3 +49,4 @@ UICollectionView + CompositionalLayout
         - Навигацию выделил в Router
 Этап 3 - Приукрашивание 
     - SearchBar
+    - Pull to refresh
