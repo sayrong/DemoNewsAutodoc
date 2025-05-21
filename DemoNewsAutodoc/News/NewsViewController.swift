@@ -15,6 +15,7 @@ protocol INewsViewModel {
     func fetchNews()
     func didScrollToEnd()
     func didTapOnCell(with id: Int)
+    func didSearchTextChanged(to query: String)
 }
 
 
@@ -30,6 +31,12 @@ class NewsViewController: UIViewController {
         return collectionView
     }()
     
+    private let searchController: UISearchController = {
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchBar.placeholder = "Search news"
+        return searchController
+    }()
+    
     init(viewModel: INewsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -42,6 +49,7 @@ class NewsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         addSubviews()
+        setupSearchController()
         setupDataSource()
         setupDelegate()
         bindViewModel()
@@ -50,6 +58,14 @@ class NewsViewController: UIViewController {
     
     private func addSubviews() {
         view.addSubview(collectionView)
+    }
+    
+    private func setupSearchController() {
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
+        searchController.searchBar.delegate = self
     }
     
     private func setupDataSource() {
@@ -105,7 +121,7 @@ class NewsViewController: UIViewController {
     }
 }
 
-extension NewsViewController: UICollectionViewDelegate, UIScrollViewDelegate {
+extension NewsViewController: UICollectionViewDelegate, UIScrollViewDelegate  {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
@@ -123,5 +139,22 @@ extension NewsViewController: UICollectionViewDelegate, UIScrollViewDelegate {
         if distanceToBottom > 0 && distanceToBottom < 200 {
             viewModel.didScrollToEnd()
         }
+    }
+}
+
+extension NewsViewController: UISearchResultsUpdating, UISearchBarDelegate {
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        let query = searchController.searchBar.text ?? ""
+        viewModel.didSearchTextChanged(to: query)
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
     }
 }

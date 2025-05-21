@@ -21,6 +21,9 @@ class NewsViewModel: INewsViewModel {
     private var currentPage: Int = 1
     private var isLoading: Bool = true
     private var hasMoreToLoad: Bool = true
+    private var searchQuery: String = ""
+    private var isFiltering: Bool { !searchQuery.isEmpty }
+    
     
     init(repository: INewsRepository, router: INewsRouter, snapshotDidChange: ((Snapshot) -> Void)? = nil) {
         self.repository = repository
@@ -58,7 +61,7 @@ class NewsViewModel: INewsViewModel {
     }
     
     func didScrollToEnd() {
-        guard !isLoading, hasMoreToLoad else { return }
+        guard !isLoading, hasMoreToLoad, !isFiltering else { return }
         currentPage += 1
         fetchNews()
     }
@@ -66,5 +69,16 @@ class NewsViewModel: INewsViewModel {
     func didTapOnCell(with id: Int) {
         guard let article = allItems.first(where: { $0.id == id }) else { return }
         router.openDetails(for: article)
+    }
+    
+    func didSearchTextChanged(to query: String) {
+        searchQuery = query
+        let filtered: [News]
+        if query.isEmpty {
+            filtered = allItems
+        } else {
+            filtered = allItems.filter { $0.title.range(of: query, options: .caseInsensitive) != nil }
+        }
+        updateSnapshot(with: filtered)
     }
 }

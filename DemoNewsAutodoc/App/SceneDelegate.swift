@@ -21,8 +21,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let newsVM = NewsViewModel(repository: newsRepository, router: router)
         let rootViewController = NewsViewController(viewModel: newsVM)
         router.viewController = rootViewController
+        let navigationController = UINavigationController(rootViewController: rootViewController)
         
-        window?.rootViewController = rootViewController
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
     }
 }
