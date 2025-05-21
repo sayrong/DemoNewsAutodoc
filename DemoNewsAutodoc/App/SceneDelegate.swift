@@ -17,9 +17,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         let newsRepository = NewsRepository()
-        let newsVM = NewsViewModel(repository: newsRepository)
+        let router = NewsRouter()
+        let newsVM = NewsViewModel(repository: newsRepository, router: router)
         let rootViewController = NewsViewController(viewModel: newsVM)
-
+        router.viewController = rootViewController
+        
         window?.rootViewController = rootViewController
         window?.makeKeyAndVisible()
     }

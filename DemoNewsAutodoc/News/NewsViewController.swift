@@ -14,6 +14,7 @@ protocol INewsViewModel {
     var snapshotDidChange: ((Snapshot) -> ())? { get set }
     func fetchNews()
     func didScrollToEnd()
+    func didTapOnCell(with id: Int)
 }
 
 
@@ -51,10 +52,6 @@ class NewsViewController: UIViewController {
         view.addSubview(collectionView)
     }
     
-    private func setupDelegate() {
-        collectionView.delegate = self
-    }
-    
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>(
             collectionView: collectionView
@@ -66,6 +63,10 @@ class NewsViewController: UIViewController {
             cell.configure(with: item)
             return cell
         }
+    }
+    
+    private func setupDelegate() {
+        collectionView.delegate = self
     }
     
     private func bindViewModel() {
@@ -105,6 +106,11 @@ class NewsViewController: UIViewController {
 }
 
 extension NewsViewController: UICollectionViewDelegate, UIScrollViewDelegate {
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
+        viewModel.didTapOnCell(with: item.id)
+    }
     
     // Пагинация
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
