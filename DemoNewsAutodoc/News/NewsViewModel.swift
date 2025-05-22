@@ -43,14 +43,18 @@ class NewsViewModel: INewsViewModel {
                 let news = try await repository.fetchNews(page: currentPage)
                 hasMoreToLoad = news.count > 0
                 allItems.append(contentsOf: news)
-                updateSnapshot(with: allItems)
+                try updateSnapshot(with: allItems)
             } catch {
                 print(error.localizedDescription)
             }
         }
     }
     
-    private func updateSnapshot(with news: [News]){
+    private func updateSnapshot(with news: [News]) throws {
+        guard news.count == Set(news).count else {
+            throw NSError(domain: "DemoNewsAutodoc", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Items in snapshot will be not unique"])
+        }
         var snapshot = Snapshot()
         snapshot.appendSections([.main])
         let items = news.map { NewsViewItem(id: $0.id, title: $0.title, imageUrl: $0.titleImageUrl) }
@@ -79,7 +83,12 @@ class NewsViewModel: INewsViewModel {
         } else {
             filtered = allItems.filter { $0.title.range(of: query, options: .caseInsensitive) != nil }
         }
-        updateSnapshot(with: filtered)
+        
+        do {
+            try updateSnapshot(with: filtered)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
     
     func reloadData() {
