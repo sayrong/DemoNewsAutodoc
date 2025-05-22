@@ -22,6 +22,10 @@ final class WebViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    @objc func closeAction() {
+        dismiss(animated: true)
+    }
+    
     // MARK: Lifecycle
 
     override func loadView() {

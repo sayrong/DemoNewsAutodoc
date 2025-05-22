@@ -27,7 +27,6 @@ class NewsViewController: UIViewController {
     
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createCompositionalLayout())
-        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.register(NewsCollectionViewCell.self, forCellWithReuseIdentifier: NewsCollectionViewCell.reuseIdentifier)
         return collectionView
     }()
@@ -51,7 +50,8 @@ class NewsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        addSubviews()
+        view.backgroundColor = .systemBackground
+        setupCollectionView()
         setupSearchController()
         setupRefresh()
         setupDataSource()
@@ -60,8 +60,15 @@ class NewsViewController: UIViewController {
         viewModel.fetchNews()
     }
     
-    private func addSubviews() {
+    private func setupCollectionView() {
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
     }
     
     private func setupSearchController() {
@@ -111,28 +118,29 @@ class NewsViewController: UIViewController {
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { (sectionIndex, environment) -> NSCollectionLayoutSection? in
             
-            let itemWidth: CGFloat = 375
+            let desiredItemWidth: CGFloat = 300
             let itemHeight: CGFloat = 200
+            let spacing: CGFloat = 8
+            let itemHorizontalInset: CGFloat = 16
             
-            let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(itemWidth),
+            let availableWidth = environment.container.contentSize.width
+            //Общая ширина = N * itemWidth + (N-1) * spacing
+            let itemsPerRow = max(1, Int((availableWidth + spacing) / (desiredItemWidth + spacing)))
+            let actualItemWidth = (availableWidth - CGFloat(itemsPerRow - 1) * spacing) / CGFloat(itemsPerRow)
+
+            let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(actualItemWidth),
                                                   heightDimension: .absolute(itemHeight))
+
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            item.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
-            
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                   heightDimension: .absolute(itemHeight))
-            
-            let itemsPerRow = UIDevice.current.userInterfaceIdiom == .pad ? max(2, Int(environment.container.contentSize.width / itemWidth)) : 1
+            item.contentInsets = NSDirectionalEdgeInsets(top: spacing, leading: itemHorizontalInset, bottom: spacing, trailing: itemHorizontalInset)
+
+            let groupSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .absolute(200)
+            )
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: itemsPerRow)
-            
-            // Вычисляем отступы для центрирования группы
-            let containerWidth = environment.container.contentSize.width
-            let groupWidth = CGFloat(itemsPerRow) * itemWidth + CGFloat(itemsPerRow - 1) * 8 // itemWidth * count + spacing
-            let inset = max(0, (containerWidth - groupWidth) / 2) // Центрирующий отступ
-            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: inset, bottom: 0, trailing: inset)
-            
+
             let section = NSCollectionLayoutSection(group: group)
-            
             return section
         }
     }

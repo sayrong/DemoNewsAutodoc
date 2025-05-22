@@ -50,3 +50,4 @@ UICollectionView + CompositionalLayout
 Этап 3 - Приукрашивание 
     - SearchBar
     - Pull to refresh
+    - Проверка и исправление багов

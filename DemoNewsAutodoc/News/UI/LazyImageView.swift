@@ -49,6 +49,11 @@ class LazyImageView: UIImageView {
                     }
                 }
             } catch {
+                await MainActor.run {
+                    let placeHolder = UIImage(named: "gotta.JPG")
+                    self.image = placeHolder
+                    self.spinner.stopAnimating()
+                }
                 print(error.localizedDescription)
             }
         }

@@ -17,7 +17,17 @@ class NewsRouter: INewsRouter {
     
     func openDetails(for news: News) {
         let newVC = WebViewController(url: news.fullUrl)
-        newVC.modalPresentationStyle = .pageSheet
-        viewController?.present(newVC, animated: true)
+        
+        let navController = UINavigationController(rootViewController: newVC)
+        let closeButton = UIBarButtonItem(barButtonSystemItem: .close, target: newVC, action: #selector(WebViewController.closeAction))
+        newVC.navigationItem.leftBarButtonItem = closeButton
+        
+        navController.modalPresentationStyle = .pageSheet
+        if let sheet = navController.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        viewController?.present(navController, animated: true)
     }
 }
