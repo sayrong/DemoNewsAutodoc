@@ -8,21 +8,42 @@
 import UIKit
 import ImageIO
 
-class ImageLoader {
+actor ImageLoader {
     
     static let shared = ImageLoader()
     
     private let imageCache = NSCache<NSURL, UIImage>()
+    private var runningRequests: [URL: Task<UIImage, Error>] = [:]
     
     init() {
         imageCache.countLimit = 200
     }
     
     func loadImage(from url: URL) async throws -> UIImage {
+        try Task.checkCancellation()
+        
         if let cached = imageCache.object(forKey: url as NSURL) {
             return cached
         }
+        
+        if let existingTask = runningRequests[url] {
+            return try await existingTask.value
+        }
+        
+        let task = Task<UIImage, Error> {
+            try await self.processImage(url)
+        }
+        runningRequests[url] = task
+        defer { runningRequests.removeValue(forKey: url) }
+        
+        return try await task.value
+    }
+    
+    private func processImage(_ url: URL) async throws -> UIImage {
+        try Task.checkCancellation()
+        
         let (data, _) = try await URLSession.shared.data(from: url)
+        
         guard let image = createThumbnail(from: data) else {
             throw URLError(.cannotDecodeContentData)
         }

@@ -49,6 +49,7 @@ class LazyImageView: UIImageView {
                     }
                 }
             } catch {
+                if error is CancellationError { return }
                 await MainActor.run {
                     let placeHolder = UIImage(named: "gotta.JPG")
                     self.image = placeHolder
