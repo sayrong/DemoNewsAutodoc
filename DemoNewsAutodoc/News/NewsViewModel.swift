@@ -6,17 +6,31 @@
 //
 
 import UIKit
+import Combine
+
+typealias Snapshot = NSDiffableDataSourceSnapshot<NewsCollectionSection, NewsViewItem>
 
 protocol INewsRouter {
     func openDetails(for news: News)
 }
 
+enum NewsListState {
+    case idle
+    case initialLoading
+    case loadingMore
+    case loaded(snapshot: Snapshot)
+    case error(String)
+}
+
 class NewsViewModel: INewsViewModel {
     
-    private let repository: INewsRepository
-    private let router: INewsRouter
-    var snapshotDidChange: ((Snapshot) -> ())? = nil
+    @Published private var state: NewsListState = .idle
+    // External predefined viewModel state
+    var statePublisher: AnyPublisher<NewsListState, Never> {
+        $state.eraseToAnyPublisher()
+    }
     
+    // Internal state
     private var allItems: [News] = []
     private var currentPage: Int = 1
     private var isLoading: Bool = false
@@ -24,33 +38,36 @@ class NewsViewModel: INewsViewModel {
     private var searchQuery: String = ""
     private var isFiltering: Bool { !searchQuery.isEmpty }
     
+    // Dependency
+    private let repository: INewsRepository
+    private let router: INewsRouter
     
-    init(repository: INewsRepository, router: INewsRouter, snapshotDidChange: ((Snapshot) -> Void)? = nil) {
+    init(repository: INewsRepository, router: INewsRouter) {
         self.repository = repository
         self.router = router
-        self.snapshotDidChange = snapshotDidChange
     }
     
     func fetchNews() {
-        isLoading = true
+        if allItems.isEmpty {
+            state = .initialLoading
+        } else {
+            state = .loadingMore
+        }
         Task {
-            defer {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                }
-            }
             do {
                 let news = try await repository.fetchNews(page: currentPage)
                 hasMoreToLoad = news.count > 0
                 allItems.append(contentsOf: news)
-                try updateSnapshot(with: allItems)
+                let snapshot = try createSnapshot(with: allItems)
+                state = .loaded(snapshot: snapshot)
             } catch {
                 print(error.localizedDescription)
+                state = .error(error.localizedDescription)
             }
         }
     }
     
-    private func updateSnapshot(with news: [News]) throws {
+    private func createSnapshot(with news: [News]) throws -> Snapshot {
         guard news.count == Set(news).count else {
             throw NSError(domain: "DemoNewsAutodoc", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "Items in snapshot will be not unique"])
@@ -59,9 +76,7 @@ class NewsViewModel: INewsViewModel {
         snapshot.appendSections([.main])
         let items = news.map { NewsViewItem(id: $0.id, title: $0.title, imageUrl: $0.titleImageUrl) }
         snapshot.appendItems(items, toSection: .main)
-        DispatchQueue.main.async {
-            self.snapshotDidChange?(snapshot)
-        }
+        return snapshot
     }
     
     func didScrollToEnd() {
@@ -85,9 +100,11 @@ class NewsViewModel: INewsViewModel {
         }
         
         do {
-            try updateSnapshot(with: filtered)
+            let snapshot = try createSnapshot(with: filtered)
+            state = .loaded(snapshot: snapshot)
         } catch {
             print(error.localizedDescription)
+            state = .error(error.localizedDescription)
         }
     }
     

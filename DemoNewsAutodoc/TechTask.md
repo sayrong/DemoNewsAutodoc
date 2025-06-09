@@ -51,3 +51,6 @@ UICollectionView + CompositionalLayout
     - SearchBar
     - Pull to refresh
     - Проверка и исправление багов
+Этап 4 - Исправление комментариев
+    - dequeueConfiguredReusableCell вместо dequeueReusableCell
+    - combine + state in ViewModel 

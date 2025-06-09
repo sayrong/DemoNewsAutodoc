@@ -6,12 +6,12 @@
 //
 
 import UIKit
+import Combine
 
 protocol INewsViewModel {
-    
-    typealias Snapshot = NSDiffableDataSourceSnapshot<NewsCollectionSection, NewsViewItem>
-    
-    var snapshotDidChange: ((Snapshot) -> ())? { get set }
+    // ViewState
+    var statePublisher: AnyPublisher<NewsListState, Never> { get }
+    // Methods to interact
     func fetchNews()
     func didScrollToEnd()
     func didTapOnCell(with id: Int)
@@ -23,6 +23,9 @@ protocol INewsViewModel {
 class NewsViewController: UIViewController {
     
     private var viewModel: INewsViewModel
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: UI Elements
     private var dataSource: UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>!
     
     private lazy var collectionView: UICollectionView = {
@@ -38,7 +41,9 @@ class NewsViewController: UIViewController {
     }()
     
     private lazy var refreshControl = UIRefreshControl()
+    private var loadingIndicator: UIActivityIndicatorView?
     
+    // MARK: VC Lifecycle
     init(viewModel: INewsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -54,12 +59,13 @@ class NewsViewController: UIViewController {
         setupCollectionView()
         setupSearchController()
         setupRefresh()
+        setupLoadingIndicator()
         setupDataSource()
         setupDelegate()
         bindViewModel()
-        viewModel.fetchNews()
     }
     
+    // MARK: UI Setup
     private func setupCollectionView() {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
@@ -88,6 +94,18 @@ class NewsViewController: UIViewController {
         viewModel.reloadData()
     }
     
+    private func setupLoadingIndicator() {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.hidesWhenStopped = true
+        view.addSubview(indicator)
+        NSLayoutConstraint.activate([
+            indicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            indicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+        loadingIndicator = indicator
+    }
+    
     private func setupDataSource() {
         
         let cellRegistration = UICollectionView.CellRegistration<NewsCollectionViewCell, NewsViewItem> { cell, indexPath, item in
@@ -105,16 +123,43 @@ class NewsViewController: UIViewController {
         collectionView.delegate = self
     }
     
+    // MARK: Bind and state render
     private func bindViewModel() {
-        viewModel.snapshotDidChange = { [weak self] snapshot in
-            guard let self = self else { return }
-            self.dataSource.apply(snapshot, animatingDifferences: true)
-            if self.refreshControl.isRefreshing {
-                self.refreshControl.endRefreshing()
+        viewModel.statePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.render(state: state)
             }
+            .store(in: &cancellables)
+    }
+    
+    private func render(state: NewsListState) {
+        switch state {
+        case .idle:
+            viewModel.fetchNews()
+        case .initialLoading:
+            loadingIndicator?.startAnimating()
+        case .loadingMore:
+            break
+        case .loaded(let snapshot):
+            loadingIndicator?.stopAnimating()
+            dataSource.apply(snapshot, animatingDifferences: true)
+            refreshControl.endRefreshing()
+        case .error(let message):
+            loadingIndicator?.stopAnimating()
+            refreshControl.endRefreshing()
+            showError(message)
         }
     }
     
+    func showError(_ message: String) {
+        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ОК", style: .default))
+        present(alert, animated: true)
+    }
+    
+    
+    // MARK: Collection Layout
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { (sectionIndex, environment) -> NSCollectionLayoutSection? in
             
