@@ -89,15 +89,15 @@ class NewsViewController: UIViewController {
     }
     
     private func setupDataSource() {
+        
+        let cellRegistration = UICollectionView.CellRegistration<NewsCollectionViewCell, NewsViewItem> { cell, indexPath, item in
+            cell.configure(with: item)
+        }
+        
         dataSource = UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>(
             collectionView: collectionView
         ) { collectionView, indexPath, item in
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NewsCollectionViewCell.reuseIdentifier, for: indexPath)
-                    as? NewsCollectionViewCell else {
-                return nil
-            }
-            cell.configure(with: item)
-            return cell
+            collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
         }
     }
     
