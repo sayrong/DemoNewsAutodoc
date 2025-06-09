@@ -165,27 +165,30 @@ class NewsViewController: UIViewController {
             
             let desiredItemWidth: CGFloat = 300
             let itemHeight: CGFloat = 200
-            let spacing: CGFloat = 8
-            let itemHorizontalInset: CGFloat = 16
+            let contentSpacing: CGFloat = 12
             
-            let availableWidth = environment.container.contentSize.width
-            //Общая ширина = N * itemWidth + (N-1) * spacing
-            let itemsPerRow = max(1, Int((availableWidth + spacing) / (desiredItemWidth + spacing)))
-            let actualItemWidth = (availableWidth - CGFloat(itemsPerRow - 1) * spacing) / CGFloat(itemsPerRow)
-
-            let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(actualItemWidth),
-                                                  heightDimension: .absolute(itemHeight))
+            let availableWidth = environment.container.effectiveContentSize.width
+            // Общая ширина = N * (itemWidth + 2 * spacing)
+            let itemsPerRow = max(1, Int( availableWidth / (desiredItemWidth + 2 * contentSpacing)))
+            let fractionalWidth = 1.0 / CGFloat(itemsPerRow)
+            
+            let itemSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(fractionalWidth),
+                heightDimension: .absolute(itemHeight))
 
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            item.contentInsets = NSDirectionalEdgeInsets(top: spacing, leading: itemHorizontalInset, bottom: spacing, trailing: itemHorizontalInset)
-
+            item.contentInsets = NSDirectionalEdgeInsets(top: contentSpacing,
+                                                         leading: contentSpacing,
+                                                         bottom: contentSpacing,
+                                                         trailing: contentSpacing)
             let groupSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(200)
+                heightDimension: .absolute(itemHeight)
             )
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: itemsPerRow)
 
             let section = NSCollectionLayoutSection(group: group)
+            
             return section
         }
     }
