@@ -26,11 +26,12 @@ class NewsViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: UI Elements
-    private var dataSource: UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>!
+    private var dataSource: UICollectionViewDiffableDataSource<NewsCollectionSection, NewsCollectionViewItem>!
     
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createCompositionalLayout())
         collectionView.register(NewsCollectionViewCell.self, forCellWithReuseIdentifier: NewsCollectionViewCell.reuseIdentifier)
+        collectionView.register(LoadingCollectionViewCell.self, forCellWithReuseIdentifier: LoadingCollectionViewCell.reuseIdentifier)
         return collectionView
     }()
     
@@ -42,6 +43,7 @@ class NewsViewController: UIViewController {
     
     private lazy var refreshControl = UIRefreshControl()
     private var loadingIndicator: UIActivityIndicatorView?
+    
     
     // MARK: VC Lifecycle
     init(viewModel: INewsViewModel) {
@@ -108,14 +110,24 @@ class NewsViewController: UIViewController {
     
     private func setupDataSource() {
         
-        let cellRegistration = UICollectionView.CellRegistration<NewsCollectionViewCell, NewsViewItem> { cell, indexPath, item in
+        let newsCell = UICollectionView.CellRegistration<NewsCollectionViewCell, NewsViewItem> { cell, indexPath, item in
             cell.configure(with: item)
         }
         
-        dataSource = UICollectionViewDiffableDataSource<NewsCollectionSection, NewsViewItem>(
+        let loadingCell = UICollectionView.CellRegistration<LoadingCollectionViewCell, Void> { cell, indexPath, _ in
+            cell.startLoading()
+        }
+        
+        dataSource = UICollectionViewDiffableDataSource<NewsCollectionSection, NewsCollectionViewItem>(
             collectionView: collectionView
         ) { collectionView, indexPath, item in
-            collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+            
+            switch item {
+            case .news(let newsItem):
+                return collectionView.dequeueConfiguredReusableCell(using: newsCell, for: indexPath, item: newsItem)
+            case .loading:
+                return collectionView.dequeueConfiguredReusableCell(using: loadingCell, for: indexPath, item: ())
+            }
         }
     }
     
@@ -197,19 +209,16 @@ class NewsViewController: UIViewController {
 extension NewsViewController: UICollectionViewDelegate, UIScrollViewDelegate  {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
+        guard let viewItem = dataSource.itemIdentifier(for: indexPath) else { return }
+        guard case let .news(item) = viewItem else { return }
         viewModel.didTapOnCell(with: item.id)
     }
     
     // Пагинация
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offsetY = scrollView.contentOffset.y
-        let contentHeight = scrollView.contentSize.height
-        let frameHeight = scrollView.bounds.height
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let itemView = dataSource.itemIdentifier(for: indexPath) else { return }
         
-        let distanceToBottom = contentHeight - offsetY - frameHeight
-        
-        if distanceToBottom > 0 && distanceToBottom < 200 {
+        if case .loading = itemView {
             viewModel.didScrollToEnd()
         }
     }

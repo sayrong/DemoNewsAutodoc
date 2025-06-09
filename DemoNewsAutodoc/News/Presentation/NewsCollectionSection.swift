@@ -11,6 +11,11 @@ enum NewsCollectionSection: Hashable {
     case main
 }
 
+enum NewsCollectionViewItem: Hashable {
+    case news(NewsViewItem)
+    case loading
+}
+
 struct NewsViewItem: Hashable {
     let id: Int
     let title: String

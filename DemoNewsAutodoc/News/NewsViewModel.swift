@@ -8,7 +8,7 @@
 import UIKit
 import Combine
 
-typealias Snapshot = NSDiffableDataSourceSnapshot<NewsCollectionSection, NewsViewItem>
+typealias Snapshot = NSDiffableDataSourceSnapshot<NewsCollectionSection, NewsCollectionViewItem>
 
 protocol INewsRouter {
     func openDetails(for news: News)
@@ -33,10 +33,15 @@ class NewsViewModel: INewsViewModel {
     // Internal state
     private var allItems: [News] = []
     private var currentPage: Int = 1
-    private var isLoading: Bool = false
     private var hasMoreToLoad: Bool = true
     private var searchQuery: String = ""
     private var isFiltering: Bool { !searchQuery.isEmpty }
+    private var isLoading: Bool {
+        if case .initialLoading = state { return true }
+        if case .loadingMore = state { return true }
+        return false
+    }
+
     
     // Dependency
     private let repository: INewsRepository
@@ -58,7 +63,8 @@ class NewsViewModel: INewsViewModel {
                 let news = try await repository.fetchNews(page: currentPage)
                 hasMoreToLoad = news.count > 0
                 allItems.append(contentsOf: news)
-                let snapshot = try createSnapshot(with: allItems)
+                let snapshot = try createSnapshot(with: allItems,
+                                                  hasMore: hasMoreToLoad)
                 state = .loaded(snapshot: snapshot)
             } catch {
                 print(error.localizedDescription)
@@ -67,15 +73,22 @@ class NewsViewModel: INewsViewModel {
         }
     }
     
-    private func createSnapshot(with news: [News]) throws -> Snapshot {
+    private func createSnapshot(with news: [News], hasMore: Bool) throws -> Snapshot {
         guard news.count == Set(news).count else {
             throw NSError(domain: "DemoNewsAutodoc", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "Items in snapshot will be not unique"])
         }
         var snapshot = Snapshot()
         snapshot.appendSections([.main])
-        let items = news.map { NewsViewItem(id: $0.id, title: $0.title, imageUrl: $0.titleImageUrl) }
-        snapshot.appendItems(items, toSection: .main)
+        let viewItems = news.map {
+            NewsCollectionViewItem.news(
+                NewsViewItem(id: $0.id, title: $0.title, imageUrl: $0.titleImageUrl)
+            )
+        }
+        snapshot.appendItems(viewItems, toSection: .main)
+        if hasMore {
+            snapshot.appendItems([.loading], toSection: .main)
+        }
         return snapshot
     }
     
@@ -100,7 +113,8 @@ class NewsViewModel: INewsViewModel {
         }
         
         do {
-            let snapshot = try createSnapshot(with: filtered)
+            let snapshot = try createSnapshot(with: filtered,
+                                              hasMore: false)
             state = .loaded(snapshot: snapshot)
         } catch {
             print(error.localizedDescription)
